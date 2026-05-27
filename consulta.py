@@ -1,6 +1,6 @@
 #captura dos dados
 
-print("Cole as placas:\n")
+print("Cole as placas (Aperte o ENTER 3x):\n")
 
 placas = []
 
@@ -11,6 +11,11 @@ while True:
     placas.append(linha.strip())
 
 #Realizando a busca no site
+import os
+import sys
+
+if getattr(sys, 'frozen', False):
+    os.environ['PLAYWRIGHT_BROWSERS_PATH'] = os.path.join(sys._MEIPASS, 'ms-playwright')
 
 from playwright.sync_api import sync_playwright
 
@@ -29,14 +34,14 @@ with sync_playwright() as teste:
 
         pagina.get_by_role("button", name="Pesquisar").click()
 
-        pagina.wait_for_timeout(5000)
+        pagina.wait_for_timeout(3000)
 
-        texto = pagina.get_by_text("Veículo está no pátio")
+        texto = pagina.get_by_text("Veículo não se encontra no pátio")
 
         if texto.count() > 0:
-            resposta = ("Veículo está no pátio")
-        else:
             resposta = ("Veículo não se encontra no pátio")
+        else:
+            resposta = ("Veículo está no pátio")
 
         resultado.append(f"{placa} - {resposta}")
 
@@ -46,7 +51,28 @@ with sync_playwright() as teste:
 
 #Criando o arquivo
 
-with open("placas.txt", "w") as arquivo:
-    for linha in resultado:
-        arquivo.write(linha + "\n")
+from tkinter import Tk
+from tkinter.filedialog import asksaveasfilename
 
+Tk().withdraw()
+
+caminho_arquivo = asksaveasfilename(
+    initialfile="placas.txt",
+    defaultextension=".txt",
+    filetypes=[("Arquivo de texto", "*.txt")],
+    title="Salvar resultado como"
+)
+
+if caminho_arquivo:
+    with open(caminho_arquivo, "w", encoding="utf-8") as arquivo:
+        for linha in resultado:
+            arquivo.write(linha + "\n")
+
+    print("\nArquivo salvo com sucesso!")
+else:
+    print("\nSalvamento cancelado.")
+
+try:
+    input("\nPressione ENTER para fechar...")
+except:
+    os.system("pause")
